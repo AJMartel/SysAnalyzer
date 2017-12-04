@@ -804,7 +804,7 @@ End Sub
 Private Sub mnuSaveApiLog_Click()
     On Error Resume Next
     Dim apilog As String
-    apilog = UserDeskTopFolder & "\api.log"
+    apilog = UserDeskTopFolder & "\api" & LOGFILEEXT
     If fso.FileExists(apilog) Then fso.DeleteFile apilog
     fso.writeFile apilog, GetAllElements(lvAPILog)
 End Sub
@@ -812,7 +812,7 @@ End Sub
 Private Sub mnuSaveDirWatch_Click()
     On Error Resume Next
     Dim dirlog As String
-    dirlog = UserDeskTopFolder & "\dirWatch.log"
+    dirlog = UserDeskTopFolder & "\dirWatch" & LOGFILEEXT
     If fso.FileExists(dirlog) Then fso.DeleteFile dirlog
     fso.writeFile dirlog, GetAllElements(lvDirWatch)
 End Sub
@@ -858,9 +858,13 @@ Private Sub Form_Load()
         mnuHideKnown.Checked = True
         mnuListUnknown.Enabled = True 'this gets all displayed dlls automatically, only makes sense with hideknown enabled..
     End If
+        
+    If known.Disabled Then
+        mnuKnownDBDisable.Checked = True 'does not fire click event...
+    End If
     
-    mnuKnownDBDisable.Checked = CBool(GetMySetting("mnuKnownDBDisable", "False"))
-    known.Disabled = mnuKnownDBDisable.Checked
+    'mnuKnownDBDisable.Checked = CBool(GetMySetting("mnuKnownDBDisable", "False"))
+    'known.Disabled = mnuKnownDBDisable.Checked
     
     Dim alv As ListView, i As Long
     For i = 0 To 6
@@ -1177,7 +1181,7 @@ Private Sub mnuProcCmdLine_Click()
         activePID = 0
         Exit Sub
     End If
-    MsgBox cp.CmdLine, vbInformation
+    MsgBox cp.cmdLine, vbInformation
 End Sub
 
 Private Sub mnuRegMonCopyLine_Click()
@@ -1292,7 +1296,7 @@ Private Sub mnuSearch_Click()
     Next
     
     If match > 0 Then
-        frmReport.ShowList ret, , "search_result.log", False
+        frmReport.ShowList ret, , "search_result" & LOGFILEEXT, False
     End If
     
 End Sub
@@ -1368,29 +1372,29 @@ Private Sub tmrCountDown_Timer()
             ret(0) = ret(0) & "No new processes detected look at the dlls or it may have exited" & vbCrLf & vbCrLf
         End If
         
-        fso.writeFile UserDeskTopFolder & "\Report_" & Format(Now(), "h.nam/pm") & ".log", Join(ret, vbCrLf)
-        frmReportViewer.OpenAnalysisFolder UserDeskTopFolder
+        fso.writeFile UserDeskTopFolder & "\Report_" & Format(Now(), "h.nam/pm") & LOGFILEEXT, Join(ret, vbCrLf)
         
-        
+        If isAutoRunMode Then
+            diff.CProc.TerminateProces networkAnalyzerPID
+            diff.CProc.TerminateProces procWatchPID
+            diff.CProc.TerminateProces goatBrowserPID
+            diff.CProc.TerminateProces tcpDumpPID 'so this is actually the cmd.exe process since we used /k
+            diff.CProc.KillProcess "win_dump.exe"
+            'note we do not kill off the malware process or any new ones created we just clean up after ourselves..
+            Form_Unload 0
+        Else
+            frmReportViewer.OpenAnalysisFolder UserDeskTopFolder
+        End If
+
     Else
         lblDisplay = (seconds - tickCount) & " Seconds remaining"
     End If
-    
-    
+        
 End Sub
-
- 
 
 Function GetClipboard() As String
     GetClipboard = Clipboard.GetText
 End Function
-
-
-
-
-
-
-
 
 Private Sub mnuListUnknown_Click()
     

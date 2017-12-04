@@ -54,7 +54,13 @@ Global cLogData As New Collection
 Global DebugLogFile As String
 Global START_TIME As Date
 Global procWatchPID As Long
+Global goatBrowserPID As Long
+Global tcpDumpPID As Long
+Global networkAnalyzerPID As Long
 Global DirWatchActive As Boolean
+Global isAutoRunMode As Boolean
+Global outputDir As String
+Global LOGFILEEXT As String
 
 Global Const LANG_US = &H409
 Private Const HWND_NOTOPMOST = -2
@@ -73,7 +79,7 @@ Private Declare Function GetFileVersionInfo Lib "Version.dll" Alias "GetFileVers
 Private Declare Function GetFileVersionInfoSize Lib "Version.dll" Alias "GetFileVersionInfoSizeA" (ByVal lptstrFilename As String, lpdwHandle As Long) As Long
 Private Declare Function VerQueryValue Lib "Version.dll" Alias "VerQueryValueA" (pBlock As Any, ByVal lpSubBlock As String, lplpBuffer As Any, puLen As Long) As Long
 Private Declare Function GetSystemDirectory Lib "kernel32" Alias "GetSystemDirectoryA" (ByVal path As String, ByVal cbBytes As Long) As Long
-Private Declare Sub MoveMemory Lib "kernel32" Alias "RtlMoveMemory" (Dest As Any, ByVal Source As Long, ByVal Length As Long)
+Private Declare Sub MoveMemory Lib "kernel32" Alias "RtlMoveMemory" (Dest As Any, ByVal Source As Long, ByVal length As Long)
 Private Declare Function lstrcpy Lib "kernel32" Alias "lstrcpyA" (ByVal lpString1 As String, ByVal lpString2 As Long) As Long
 Public Declare Function FindWindow Lib "user32" Alias "FindWindowA" (ByVal lpClassname As String, ByVal lpWindowName As String) As Long
 Public Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (hpvDest As Any, hpvSource As Any, ByVal cbCopy As Long)
@@ -83,7 +89,8 @@ Public Declare Function GetForegroundWindow Lib "user32" () As Long
 Public Declare Function GetClassName Lib "user32" Alias "GetClassNameA" (ByVal hwnd As Long, ByVal lpClassname As String, ByVal nMaxCount As Long) As Long
 Public Declare Function ShowWindow Lib "user32" (ByVal hwnd As Long, ByVal nCmdShow As Long) As Long
 Private Declare Function EnumChildWindows Lib "user32" (ByVal hWndParent As Long, ByVal lpEnumFunc As Long, ByVal lParam As Long) As Long
-                    
+Private Declare Function GetWindowThreadProcessId Lib "user32.dll" (ByVal hwnd As Long, ByRef hINst As Long) As Long
+
                      
 Public Type FILEPROPERTIE
     CompanyName As String
@@ -293,16 +300,16 @@ Function pHex(x)
 End Function
 
 'todo: try zlib compressibility as another entropy check...
-Function CalculateEntropy(ByVal s As String) As Integer 'very basic...
-    On Error Resume Next
-    If Len(s) = 0 Then Exit Function
-    Dim a As Long, b As Long
-    a = Len(s)
-    's = Replace(s, Chr(0), Empty)
-    s = SimpleCompress(s)
-    b = Len(s)
-    CalculateEntropy = ((b / a) * 100)
-End Function
+'Function CalculateEntropy(ByVal s As String) As Integer 'very basic...
+'    On Error Resume Next
+'    If Len(s) = 0 Then Exit Function
+'    Dim a As Long, b As Long
+'    a = Len(s)
+'    's = Replace(s, Chr(0), Empty)
+'    s = SimpleCompress(s)
+'    b = Len(s)
+'    CalculateEntropy = ((b / a) * 100)
+'End Function
 
 
 Function LaunchStrings(data As String, Optional isPath As Boolean = False)
@@ -817,13 +824,13 @@ End Function
 
 
 Function ReadFile(fileName)
-Dim f, Temp
+Dim f, temp
   f = FreeFile
-  Temp = ""
+  temp = ""
    Open fileName For Binary As #f        ' Open file.(can be text or image)
-     Temp = Input(FileLen(fileName), #f) ' Get entire Files data
+     temp = Input(FileLen(fileName), #f) ' Get entire Files data
    Close #f
-   ReadFile = Temp
+   ReadFile = temp
 End Function
 
 
@@ -848,6 +855,20 @@ Public Function UserDeskTopFolder() As String
     Dim p As String
     Const MAX_PATH As Long = 260
       
+      'this allows the user to override the normal output dir via command line (only)
+      If Len(outputDir) > 0 Then
+            If Not fso.FolderExists(outputDir) Then
+                If Not fso.buildPath(outputDir) Then
+                    outputDir = Empty
+                End If
+            End If
+      End If
+                    
+      If Len(outputDir) > 0 Then
+          UserDeskTopFolder = outputDir
+          Exit Function
+      End If
+                
       p = String(MAX_PATH, Chr(0))
       If SHGetSpecialFolderLocation(0, 0, idl) <> 0 Then Exit Function
       SHGetPathFromIDList idl, p
@@ -1009,7 +1030,11 @@ Function isNetworkAnalyzerRunning() As Boolean
     
     hServer = FindWindow(vbIDEClassName, vbWindowCaption)
     If hServer = 0 Then hServer = FindWindow(vbEXEClassName, vbWindowCaption)
-    If hServer <> 0 Then isNetworkAnalyzerRunning = True
+    
+    If hServer <> 0 Then
+        isNetworkAnalyzerRunning = True
+        GetWindowThreadProcessId hServer, networkAnalyzerPID
+    End If
     
 End Function
 
@@ -1096,6 +1121,8 @@ Sub LaunchGoatBrowser()
     Dim h1 As Long
     Dim h2 As Long
     
+    If isBrowserRunning() Then Exit Sub
+    
     f = App.path
     If isIde Then
         f = fso.GetParentFolder(f)
@@ -1110,7 +1137,8 @@ Sub LaunchGoatBrowser()
     
     h1 = GetForegroundWindow()
     pid = Shell("""" & b & """ """ & f & """", vbMinimizedFocus)
-
+    goatBrowserPID = pid
+    
     Set childWindows = New Collection
     x = EnumChildWindows(0, AddressOf EnumChildProc, ByVal 0&)
     
@@ -1149,6 +1177,115 @@ Private Function EnumChildProc(ByVal hwnd As Long, ByVal lParam As Long) As Long
     If Not IsObject(childWindows) Then Set childWindows = New Collection
     childWindows.Add c 'module level collection object...
     EnumChildProc = 1  'continue enum
+End Function
+
+'ported from Detect It Easy
+Function fileEntropy(pth As String, Optional offset As Long = 0, Optional leng As Long = -1) As Single
+    
+    Dim sz As Long
+    Dim fEntropy As Single
+    Dim bytes(255) As Single
+    Dim temp As Single
+    Dim nSize As Long
+    Dim nTemp As Long
+    Const BUFFER_SIZE = &H1000
+    Dim buf() As Byte
+    Dim f As Long
+    
+    On Error Resume Next
+    
+    f = FreeFile
+    Open pth For Binary Access Read As f
+    If Err.Number <> 0 Then GoTo ret0
+    
+    sz = LOF(f) - 1
+    
+    If leng = 0 Then GoTo ret0
+    
+    If leng = -1 Then
+        leng = sz - offset
+        If leng = 0 Then GoTo ret0
+    End If
+    
+    If offset >= sz Then GoTo ret0
+    If offset + leng > sz Then GoTo ret0
+    
+    Seek f, offset
+    nSize = leng
+    fEntropy = 1.44269504088896
+    ReDim buf(BUFFER_SIZE)
+    
+    'read the file in chunks and count how many times each byte value occurs
+    While (nSize > 0)
+        nTemp = IIf(nSize < BUFFER_SIZE, nSize, BUFFER_SIZE)
+        If nTemp <> BUFFER_SIZE Then ReDim buf(nTemp) 'last chunk, partial buffer
+        Get f, , buf()
+        For i = 0 To UBound(buf)
+            bytes(buf(i)) = bytes(buf(i)) + 1
+        Next
+        nSize = nSize - nTemp
+    Wend
+    
+    For i = 0 To UBound(bytes)
+        temp = bytes(i) / CSng(leng)
+        If temp <> 0 Then
+            fEntropy = fEntropy + (-Log(temp) / Log(2)) * bytes(i)
+        End If
+    Next
+    
+    Close f
+    fileEntropy = fEntropy / CSng(leng)
+    
+Exit Function
+ret0:
+    Close f
+End Function
+
+Function strEntropy(str As String) As Single
+    Dim b() As Byte
+    If Len(str) = 0 Then Exit Function
+    b() = StrConv(str, vbFromUnicode, LANG_US)
+    strEntropy = memEntropy(b)
+End Function
+
+Function memEntropy(buf() As Byte, Optional offset As Long = 0, Optional leng As Long = -1) As Single
+    
+    Dim sz As Long
+    Dim fEntropy As Single
+    Dim bytes(255) As Single
+    Dim temp As Single
+    Const BUFFER_SIZE = &H1000
+    
+    sz = UBound(buf)
+    
+    If leng = 0 Then GoTo ret0
+    If leng = -1 Then
+        leng = sz - offset
+        If leng = 0 Then GoTo ret0
+    End If
+    
+    If offset >= sz Then GoTo ret0
+    If offset + leng > sz Then GoTo ret0
+    
+    fEntropy = 1.44269504088896
+    
+    While (offset < sz)
+        'count each byte value occurance
+        bytes(buf(offset)) = bytes(buf(offset)) + 1
+        offset = offset + 1
+    Wend
+    
+    For i = 0 To UBound(bytes)
+        temp = bytes(i) / CSng(leng)
+        If temp <> 0 Then
+            fEntropy = fEntropy + (-Log(temp) / Log(2)) * bytes(i)
+        End If
+    Next
+    
+    memEntropy = fEntropy / CSng(leng)
+    
+Exit Function
+ret0:
 End Function
 
 

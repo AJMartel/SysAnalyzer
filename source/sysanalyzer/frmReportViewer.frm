@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX"
+Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "mscomctl.ocx"
 Object = "{9A143468-B450-48DD-930D-925078198E4D}#1.1#0"; "hexed.ocx"
 Begin VB.Form frmReportViewer 
    Caption         =   "Report File Viewer"
@@ -370,14 +370,14 @@ End Sub
 
 Private Sub cmdSaveChanges_Click()
     On Error Resume Next
-    Dim fpath As String
-    fpath = txtFile.Tag
-    If fso.FileExists(fpath) Then
-        fso.writeFile fpath, txtFile.Text
+    Dim fPath As String
+    fPath = txtFile.Tag
+    If fso.FileExists(fPath) Then
+        fso.writeFile fPath, txtFile.Text
     Else
-        fpath = dlg.SaveDialog(AllFiles, UserDeskTopFolder, "Save As", , Me.hwnd)
-        If Len(fpath) > 0 Then
-            fso.writeFile fpath, txtFile
+        fPath = dlg.SaveDialog(AllFiles, UserDeskTopFolder, "Save As", , Me.hwnd)
+        If Len(fPath) > 0 Then
+            fso.writeFile fPath, txtFile
         End If
     End If
 End Sub
@@ -387,7 +387,7 @@ Private Sub mnuExt_Click(index As Integer)
     Dim cmd As String
     
     If index = 0 Then
-        cmd = App.path & IIf(isIde(), "\..\..\", "") & "\shellext.external.log"
+        cmd = App.path & IIf(isIde(), "\..\..\", "") & "\shellext.external" & LOGFILEEXT
         Shell "notepad.exe " & GetShortName(cmd), vbNormalFocus
     Else
         cmd = mnuExt(index).Tag
@@ -406,7 +406,7 @@ Private Sub mnuRefresh_Click()
     OpenAnalysisFolder path
 End Sub
 
-Sub OpenAnalysisFolder(Optional fpath As String)
+Sub OpenAnalysisFolder(Optional fPath As String)
 
     Dim pf As String
     Dim n As Node
@@ -421,13 +421,13 @@ Sub OpenAnalysisFolder(Optional fpath As String)
     tv.Nodes.Clear
     lv.ListItems.Clear
     
-    If Len(fpath) = 0 Then fpath = UserDeskTopFolder
+    If Len(fPath) = 0 Then fPath = UserDeskTopFolder
     
-    path = fpath
+    path = fPath
     Me.Visible = True
-    pf = fpath
+    pf = fPath
     Set pn = tv.Nodes.Add(, , , "\analysis", "folder")
-    pn.Tag = fpath
+    pn.Tag = fPath
     
     AddFiles pf, pn
     AddFolder pf, pn
@@ -442,11 +442,11 @@ Sub OpenAnalysisFolder(Optional fpath As String)
     
 End Sub
 
-Sub AddFolder(fpath As String, pn As Node)
+Sub AddFolder(fPath As String, pn As Node)
     Dim folders() As String
     Dim n As Node
     
-    folders() = fso.GetSubFolders(fpath)
+    folders() = fso.GetSubFolders(fPath)
     If Not AryIsEmpty(folders) Then
         For Each f In folders
             Set n = tv.Nodes.Add(pn, tvwChild, , fso.FileNameFromPath(CStr(f)), "folder")
@@ -525,21 +525,21 @@ Sub handleFile(f As String)
     End If
     
     Set li = lv.ListItems.Add(, , fso.FileNameFromPath(f))
-    li.SubItems(1) = pad(sz)
-    li.SubItems(2) = h
-    li.SubItems(3) = GetCompileDateOrType(f)
+    li.subItems(1) = pad(sz)
+    li.subItems(2) = h
+    li.subItems(3) = GetCompileDateOrType(f)
     li.Tag = f
     
 End Sub
 
 
 
-Private Function GetImageForFile(fpath As String)
+Private Function GetImageForFile(fPath As String)
     
     On Error Resume Next
     Dim ext As String
     
-    ext = fso.GetExtension(fpath)
+    ext = fso.GetExtension(fPath)
     
     If AnyOfTheseInstr(ext, "txt,log,htm,ini,bat") Then
         GetImageForFile = "text"
@@ -550,7 +550,7 @@ Private Function GetImageForFile(fpath As String)
     
 End Function
 
-Private Function AddFiles(fpath As String, parent As Node)
+Private Function AddFiles(fPath As String, parent As Node)
 
     Dim files() As String
     Dim n As Node
@@ -558,7 +558,7 @@ Private Function AddFiles(fpath As String, parent As Node)
     Dim fType As String
     Dim logIt As Boolean
     
-    files() = fso.GetFolderFiles(fpath)
+    files() = fso.GetFolderFiles(fPath)
     If AryIsEmpty(files) Then Exit Function
     
     For Each f In files
@@ -584,11 +584,11 @@ Private Sub Form_Load()
     mnuLVPopup.Visible = False
     mnuPopup.Visible = False
     RestoreFormSizeAnPosition Me
-    he.Move txtFile.Left, tv.top
-    lv.Move txtFile.Left, tv.top
+    he.Move txtFile.Left, tv.Top
+    lv.Move txtFile.Left, tv.Top
     
     Dim ext As String
-    ext = App.path & IIf(isIde(), "\..\..", "") & "\shellext.external.log"
+    ext = App.path & IIf(isIde(), "\..\..", "") & "\shellext.external" & LOGFILEEXT
     If fso.FileExists(ext) Then
         ext = fso.ReadFile(ext)
         tmp = Split(ext, vbCrLf)
@@ -625,8 +625,8 @@ End Sub
 Private Sub Form_Resize()
     On Error Resume Next
     
-    txtFile.Height = Me.Height - txtFile.top - 800
-    tv.Height = Me.Height - tv.top - 800
+    txtFile.Height = Me.Height - txtFile.Top - 800
+    tv.Height = Me.Height - tv.Top - 800
     he.Height = tv.Height
     lv.Height = tv.Height
     
@@ -653,7 +653,7 @@ Private Sub mnuCopyTable_Click()
     ln = LongestFileName() + 2
     
     For Each li In lv.ListItems
-        t = t & rpad(li.Text, ln) & vbTab & li.SubItems(1) & vbTab & li.SubItems(2) & vbTab & li.SubItems(3) & vbCrLf
+        t = t & rpad(li.Text, ln) & vbTab & li.subItems(1) & vbTab & li.subItems(2) & vbTab & li.subItems(3) & vbCrLf
     Next
     
     Clipboard.Clear
@@ -796,9 +796,9 @@ Private Sub mnuVTLookup_Click()
     
     For Each li In lv.ListItems
         If li.Selected Then
-            h = li.SubItems(2)
+            h = li.subItems(2)
             If Len(h) > 0 And InStr(h, "Error") < 1 Then
-                push hashs, li.SubItems(2) & "," & path & "\" & li.Text & vbCrLf 'new format hash,path
+                push hashs, li.subItems(2) & "," & path & "\" & li.Text & vbCrLf 'new format hash,path
                 i = i + 1
             End If
         End If
@@ -845,10 +845,10 @@ End Sub
 Private Sub tv_DblClick()
     
     On Error Resume Next
-    Dim fpath As String
-    fpath = tv.SelectedItem.Tag
-    If InStr(1, fpath, ".pcap", vbTextCompare) > 0 Then
-        ShellExecute Me.hwnd, "open", fpath, "", "", 1
+    Dim fPath As String
+    fPath = tv.SelectedItem.Tag
+    If InStr(1, fPath, ".pcap", vbTextCompare) > 0 Then
+        ShellExecute Me.hwnd, "open", fPath, "", "", 1
     End If
     
 End Sub

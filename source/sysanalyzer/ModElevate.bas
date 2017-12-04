@@ -1,6 +1,8 @@
 Attribute VB_Name = "ModElevate"
-Private Declare Function SendMessage Lib "user32" Alias "SendMessageA" (ByVal hwnd As Long, ByVal wMsg As Long, ByVal wParam As Long, lParam As Any) As Long
-Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" (ByVal hwnd As Long, ByVal lpszOp As String, ByVal lpszFile As String, ByVal lpszParams As String, ByVal LpszDir As String, ByVal FsShowCmd As Long) As Long
+Option Explicit
+
+Private Declare Function SendMessage Lib "user32" Alias "SendMessageA" (ByVal Hwnd As Long, ByVal wMsg As Long, ByVal wParam As Long, lParam As Any) As Long
+Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" (ByVal Hwnd As Long, ByVal lpszOp As String, ByVal lpszFile As String, ByVal lpszParams As String, ByVal LpszDir As String, ByVal FsShowCmd As Long) As Long
 
 Private Declare Function Wow64DisableWow64FsRedirection Lib "kernel32.dll" (ByRef old As Long) As Long
 Private Declare Function Wow64RevertWow64FsRedirection Lib "kernel32.dll" (ByRef old As Long) As Long
@@ -29,6 +31,9 @@ Private Declare Function CloseHandle Lib "kernel32" (ByVal hObject As Long) As L
 Private Declare Function OpenProcessToken Lib "advapi32.dll" (ByVal ProcessHandle As Long, ByVal DesiredAccess As Long, TokenHandle As Long) As Long
 Private Declare Function GetTokenInformation Lib "advapi32.dll" (ByVal TokenHandle As Long, ByVal TokenInformationClass As Long, TokenInformation As Any, ByVal TokenInformationLength As Long, ReturnLength As Long) As Long
 Private Declare Function GetCurrentProcess Lib "kernel32" () As Long
+Private Declare Function ChangeWindowMessageFilter Lib "user32" (ByVal msg As Long, ByVal flag As Long) As Long 'Vista+
+Const WM_COPYDATA = &H4A
+Const WM_COPYGLOBALDATA = &H49
 
 'vista+ only
 Private Type TOKEN_ELEVATION
@@ -70,7 +75,7 @@ End Enum
 Private Type SHELLEXECUTEINFO
         cbSize        As Long
         fMask         As Long
-        hwnd          As Long
+        Hwnd          As Long
         lpVerb        As String
         lpFile        As String
         lpParameters  As String
@@ -102,6 +107,15 @@ Public Enum EShellShowConstants
         essSW_SHOWDEFAULT = 10
 End Enum
 
+Public Function AllowCopyDataAcrossUIPI()
+    Dim a, b, c
+    Const MSGFLT_ADD = 1
+    'a = ChangeWindowMessageFilter(WM_DROPFILES, MSGFLT_ADD)
+    b = ChangeWindowMessageFilter(WM_COPYDATA, MSGFLT_ADD) 'we still need this for IPC to get hook data...
+    c = ChangeWindowMessageFilter(WM_COPYGLOBALDATA, MSGFLT_ADD)
+    'MsgBox a & " " & b & " " & c
+End Function
+
 Public Function RunElevated(ByVal FilePath As String, Optional ShellShowType As EShellShowConstants = essSW_SHOWNORMAL, Optional ByVal hWndOwner As Long = 0, Optional EXEParameters As String = "") As Boolean
     Dim SEI As SHELLEXECUTEINFO
     Const SEE_MASK_DEFAULT = &H0
@@ -116,7 +130,7 @@ Public Function RunElevated(ByVal FilePath As String, Optional ShellShowType As 
         .nShow = ShellShowType              ' How the program will be displayed
         .lpDirectory = PathGetFolder(FilePath)
         .lpParameters = EXEParameters       ' Each parameter must be separated by space. If the lpFile member specifies a document file, lpParameters should be NULL.
-        .hwnd = hWndOwner                   ' Owner window handle
+        .Hwnd = hWndOwner                   ' Owner window handle
         .lpVerb = "runas"
     End With
 

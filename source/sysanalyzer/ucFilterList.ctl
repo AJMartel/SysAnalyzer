@@ -169,6 +169,19 @@ Property Get SelCount() As Long
     
 End Property
 
+Property Get selItems() As Collection
+
+    Dim c As New Collection
+    Dim li As ListItem
+    Dim cnt As Long
+    
+    Set selItems = c
+ 
+    For Each li In currentLV.ListItems
+        If li.Selected Then c.Add li
+    Next
+    
+End Property
     
 Property Get FilterColumn() As Long
     FilterColumn = m_FilterColumn

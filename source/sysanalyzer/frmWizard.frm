@@ -10,6 +10,16 @@ Begin VB.Form frmWizard
    ScaleHeight     =   5835
    ScaleWidth      =   10530
    StartUpPosition =   2  'CenterScreen
+   Begin VB.CheckBox chkUseKnown 
+      BackColor       =   &H005A5963&
+      Caption         =   "Use Known file DB :"
+      ForeColor       =   &H00E0E0E0&
+      Height          =   315
+      Left            =   5550
+      TabIndex        =   45
+      Top             =   960
+      Width           =   1725
+   End
    Begin VB.CommandButton cmdBrowse 
       Caption         =   "..."
       BeginProperty Font 
@@ -24,7 +34,7 @@ Begin VB.Form frmWizard
       Height          =   255
       Index           =   1
       Left            =   8460
-      TabIndex        =   24
+      TabIndex        =   23
       Top             =   600
       Width           =   375
    End
@@ -45,10 +55,20 @@ Begin VB.Form frmWizard
       TabIndex        =   7
       Top             =   1260
       Width           =   6465
+      Begin VB.CheckBox chkStartBrowser 
+         BackColor       =   &H005A5963&
+         Caption         =   "Start Browser as Inject Target"
+         ForeColor       =   &H00E0E0E0&
+         Height          =   315
+         Left            =   3690
+         TabIndex        =   44
+         Top             =   270
+         Width           =   2595
+      End
       Begin VB.TextBox txtIgnoreIP 
          Height          =   330
          Left            =   4725
-         TabIndex        =   44
+         TabIndex        =   43
          Top             =   1890
          Width           =   1140
       End
@@ -58,14 +78,14 @@ Begin VB.Form frmWizard
          ForeColor       =   &H00E0E0E0&
          Height          =   315
          Left            =   3645
-         TabIndex        =   43
+         TabIndex        =   42
          Top             =   1890
          Width           =   975
       End
       Begin VB.TextBox txtMonitorDlls 
          Height          =   285
          Left            =   1575
-         TabIndex        =   41
+         TabIndex        =   40
          Text            =   "explore,svchost,firefox,rundll"
          Top             =   3285
          Width           =   4290
@@ -73,14 +93,14 @@ Begin VB.Form frmWizard
       Begin VB.TextBox txtPassword 
          Height          =   285
          Left            =   4725
-         TabIndex        =   38
+         TabIndex        =   37
          Top             =   2340
          Width           =   1140
       End
       Begin VB.ComboBox cboUsers 
          Height          =   315
          Left            =   2340
-         TabIndex        =   35
+         TabIndex        =   34
          Top             =   2295
          Width           =   1845
       End
@@ -90,7 +110,7 @@ Begin VB.Form frmWizard
          ForeColor       =   &H00E0E0E0&
          Height          =   315
          Left            =   495
-         TabIndex        =   34
+         TabIndex        =   33
          Top             =   2340
          Width           =   1875
       End
@@ -100,7 +120,7 @@ Begin VB.Form frmWizard
          ForeColor       =   &H00E0E0E0&
          Height          =   255
          Left            =   3645
-         TabIndex        =   32
+         TabIndex        =   31
          Top             =   1620
          Width           =   2025
       End
@@ -183,7 +203,7 @@ Begin VB.Form frmWizard
          Height          =   255
          Left            =   6030
          MousePointer    =   14  'Arrow and Question
-         TabIndex        =   42
+         TabIndex        =   41
          Top             =   3285
          Width           =   225
       End
@@ -194,7 +214,7 @@ Begin VB.Form frmWizard
          Height          =   195
          Index           =   1
          Left            =   450
-         TabIndex        =   40
+         TabIndex        =   39
          Top             =   3375
          Width           =   1140
       End
@@ -214,7 +234,7 @@ Begin VB.Form frmWizard
          Height          =   255
          Left            =   6030
          MousePointer    =   14  'Arrow and Question
-         TabIndex        =   39
+         TabIndex        =   38
          Top             =   2385
          Width           =   225
       End
@@ -224,7 +244,7 @@ Begin VB.Form frmWizard
          ForeColor       =   &H00E0E0E0&
          Height          =   195
          Left            =   4320
-         TabIndex        =   37
+         TabIndex        =   36
          Top             =   2385
          Width           =   480
       End
@@ -244,7 +264,7 @@ Begin VB.Form frmWizard
          Height          =   255
          Left            =   2250
          MousePointer    =   14  'Arrow and Question
-         TabIndex        =   36
+         TabIndex        =   35
          Top             =   585
          Width           =   225
       End
@@ -264,7 +284,7 @@ Begin VB.Form frmWizard
          Height          =   255
          Left            =   5670
          MousePointer    =   14  'Arrow and Question
-         TabIndex        =   33
+         TabIndex        =   32
          Top             =   1620
          Width           =   225
       End
@@ -349,7 +369,7 @@ Begin VB.Form frmWizard
    Begin VB.CommandButton cmdStart 
       Caption         =   "Start"
       Height          =   375
-      Left            =   9090
+      Left            =   9135
       TabIndex        =   3
       Top             =   5355
       Width           =   1155
@@ -385,7 +405,7 @@ Begin VB.Form frmWizard
       ForeColor       =   &H00E0E0E0&
       Height          =   255
       Left            =   9000
-      TabIndex        =   31
+      TabIndex        =   30
       Top             =   585
       Width           =   1455
    End
@@ -394,7 +414,7 @@ Begin VB.Form frmWizard
       ForeColor       =   &H00E0E0E0&
       Height          =   255
       Left            =   9000
-      TabIndex        =   30
+      TabIndex        =   29
       Top             =   225
       Width           =   1455
    End
@@ -413,7 +433,7 @@ Begin VB.Form frmWizard
       Height          =   345
       Left            =   180
       MousePointer    =   14  'Arrow and Question
-      TabIndex        =   29
+      TabIndex        =   28
       Top             =   5400
       Width           =   5625
    End
@@ -432,7 +452,7 @@ Begin VB.Form frmWizard
       Height          =   255
       Left            =   1290
       MousePointer    =   14  'Arrow and Question
-      TabIndex        =   28
+      TabIndex        =   27
       Top             =   3990
       Width           =   2295
    End
@@ -452,7 +472,7 @@ Begin VB.Form frmWizard
       Height          =   255
       Left            =   135
       MousePointer    =   14  'Arrow and Question
-      TabIndex        =   27
+      TabIndex        =   26
       Top             =   3990
       Width           =   675
    End
@@ -472,7 +492,7 @@ Begin VB.Form frmWizard
       Height          =   255
       Left            =   135
       MousePointer    =   14  'Arrow and Question
-      TabIndex        =   26
+      TabIndex        =   25
       Top             =   3300
       Width           =   675
    End
@@ -492,7 +512,7 @@ Begin VB.Form frmWizard
       Height          =   255
       Left            =   120
       MousePointer    =   14  'Arrow and Question
-      TabIndex        =   25
+      TabIndex        =   24
       Top             =   3660
       Width           =   675
    End
@@ -501,8 +521,8 @@ Begin VB.Form frmWizard
       Caption         =   "lblKnown"
       ForeColor       =   &H00E0E0E0&
       Height          =   195
-      Left            =   6360
-      TabIndex        =   23
+      Left            =   7350
+      TabIndex        =   22
       Top             =   1020
       Width           =   975
    End
@@ -520,22 +540,11 @@ Begin VB.Form frmWizard
       EndProperty
       ForeColor       =   &H00E0E0E0&
       Height          =   255
-      Left            =   7680
+      Left            =   8460
       MousePointer    =   14  'Arrow and Question
-      TabIndex        =   22
-      Top             =   1020
-      Width           =   675
-   End
-   Begin VB.Label Label1 
-      BackColor       =   &H005A5963&
-      Caption         =   "Known file DB :"
-      ForeColor       =   &H00E0E0E0&
-      Height          =   255
-      Index           =   1
-      Left            =   5160
       TabIndex        =   21
-      Top             =   1020
-      Width           =   1155
+      Top             =   1035
+      Width           =   675
    End
    Begin VB.Label Label1 
       BackColor       =   &H005A5963&
@@ -700,6 +709,8 @@ Private Type config
     interface As Byte
     chkIgnoreIP As Byte
     txtIgnoreIP As String
+    startBrowser As Byte
+    useKnown As Byte
 End Type
  
 Private cfg As config
@@ -712,6 +723,10 @@ Private doRnd As Boolean
 
 Private Sub chkIgnoreIP_Click()
 '    txtIgnoreIP.Visible = CBool(chkIgnoreIP.value)
+End Sub
+
+Private Sub chkUseKnown_Click()
+    known.Disabled = Not (chkUseKnown.value = 1)
 End Sub
 
 Private Sub cmdAbout_Click()
@@ -823,6 +838,7 @@ Private Sub lblSkip_Click()
     ProcessesToRWEScan = txtRWEScan
     csvProcessesToDllMonitor = txtMonitorDlls
     
+    If known.Loaded Then known.Disabled = Not (chkUseKnown.value = 1)
     frmMain.Initalize
     frmMain.SSTab1.TabVisible(6) = True 'dir watch, they can turn on anytime..
     If chkWatchDirs.value Then frmMain.cmdDirWatch_Click
@@ -959,6 +975,7 @@ Sub SetConfigDefaults()
             .interface = 1
             .tcpdump = 1
             txtDelay = .delay
+            .startBrowser = 1
     End With
 End Sub
 
@@ -988,6 +1005,8 @@ Sub LoadConfig()
         chkPacketCapture.value = .tcpdump
         chkIgnoreIP.value = .chkIgnoreIP
         txtIgnoreIP = .txtIgnoreIP
+        chkStartBrowser.value = .startBrowser
+        chkUseKnown.value = .useKnown
     End With
     
 End Sub
@@ -1007,6 +1026,8 @@ Sub SaveConfig()
         .tcpdump = chkPacketCapture.value
         .chkIgnoreIP = chkIgnoreIP.value
         .txtIgnoreIP = txtIgnoreIP.Text
+        .startBrowser = chkStartBrowser.value
+        .useKnown = chkUseKnown.value
     End With
     
     Dim f As Long
@@ -1056,7 +1077,10 @@ Private Sub Form_Load()
     On Error GoTo hell
     
     Dim c As Collection
+    Dim sample As String
     Dim ip
+    
+    'MsgBox Command
     
     If IsVistaPlus() Then
         If Not IsProcessElevated() Then
@@ -1074,20 +1098,6 @@ Private Sub Form_Load()
     
     mnuPopup.Visible = False
     chkFilterHostOnly.value = CInt(GetMySetting("chkFilterHostOnly.Value", 1))
-    
-    If Not isBrowserRunning() Then
-        'we do this on form startup and no on launch to take advantage of the natural user delay of them
-        'configuring the for the run. This gives the browser time to full initilize and get its bs out of the way
-        'otherwise we would catch some of this startup traffic in our logging as extra noise..it is important to have
-        'a goat browser window open to catch injectors which are common enough to warrent it.
-        LaunchGoatBrowser
-    End If
-    
-    START_TIME = Now
-    DebugLogFile = UserDeskTopFolder & "\debug.log"
-    If fso.FileExists(DebugLogFile) Then fso.DeleteFile DebugLogFile
-    fso.writeFile DebugLogFile, "-------[ SysAnalyzer v" & App.major & "." & App.minor & "." & App.Revision & "  " & START_TIME & " ]-------" & vbCrLf
-    
     mnuScanForUnknownMods.Enabled = False
     
     If Not known.Ready Then
@@ -1099,6 +1109,7 @@ Private Sub Form_Load()
         lblKnown.Caption = "Empty"
     End If
     
+    LOGFILEEXT = ".log"
     cfgFile = App.path & "\cfg.dat"
     networkAnalyzer = App.path & IIf(isIde(), "\..\..", Empty) & "\sniff_hit.exe"
     procWatch = App.path & IIf(isIde(), "\..\..", Empty) & "\proc_watch.exe"
@@ -1120,7 +1131,6 @@ Private Sub Form_Load()
     cboIp.Visible = IIf(cboIp.ListCount > 1, True, False) 'try to keep config as easy as we can for them...
     lblip.Visible = cboIp.Visible
 
-
     'watchDirs.Add CStr(Environ("TEMP"))
     'watchDirs.Add CStr(Environ("WINDIR"))
     'watchDirs.Add CStr("C:\Program Files")
@@ -1130,6 +1140,7 @@ Private Sub Form_Load()
     Set cLogData = New Collection
     
     LoadConfig
+    If known.Loaded And cfg.useKnown Then chkUseKnown.value = 1
 
     If cboIp.ListCount = 0 Then  'no active interfaces ?
         chkPacketCapture.Enabled = False
@@ -1138,26 +1149,67 @@ Private Sub Form_Load()
         chkNetworkAnalyzer.Enabled = False
     End If
     
-    If Len(Command) > 0 Then
-        Dim cmd As String
-        cmd = Trim(Replace(Command, """", Empty))
-        If fso.FileExists(cmd) Then
-            txtBinary = cmd
+    If chkStartBrowser.value = 1 Then
+        'we do this on form startup and no on launch to take advantage of the natural user delay of them
+        'configuring the for the run. This gives the browser time to full initilize and get its bs out of the way
+        'otherwise we would catch some of this startup traffic in our logging as extra noise..it is important to have
+        'a goat browser window open to catch injectors which are common enough to warrent it.
+        LaunchGoatBrowser
+    End If
+    
+    LoadUsers
+    'Me.Icon = frmMain.Icon 'this would load frmMain to early...
+    
+    cmdLine.LoadArgs '"'%ap%\_safe_test1.exe' /delay fart /args 'test 123' /autostart /outDir c:\output" 'sample cmdline for testing...
+    
+    If cmdLine.args.count > 0 Then
+       
+        sample = Replace(cmdLine.args(1), "%ap%", App.path & IIf(isIde(), "\..\..\", ""))
+        
+        If fso.FileExists(sample) Then
+            txtBinary = sample
             lblBStats.Caption = GetCompileDateOrType(txtBinary, , , True)
-            'TODO auto run exe with settings if /launch
+            If cmdLine.ArgExists("autostart") Then isAutoRunMode = True
+            If cmdLine.ArgExists("delay") Then txtDelay = cmdLine.GetArg("delay")
+            If cmdLine.ArgExists("args") Then txtArgs = cmdLine.GetArg("args")
+            If cmdLine.ArgExists("outDir") Then outputDir = cmdLine.GetArg("outdir")
+            If cmdLine.ArgExists("ext") Then LOGFILEEXT = cmdLine.GetArg("ext")
+            validateDelay
+        Else
+            MsgBox Replace( _
+                         "Command line usage: '<path to analysis file>' \n\nOptional Arguments:\n    /autostart " & _
+                         "\n    /delay <int> \n    /args '<arg string>' \n    /outDir '<output folder>' /n    /ext extension" & _
+                         "\n\nNote: All other options can be preconfigured in the GUI which saves " & _
+                         "settings across runs.\n          Just open open UI, configure, then close wizard form to save settings" & _
+                         "\n          Either double or single quotes are fine" _
+                   , "\n", vbCrLf), vbInformation
+            End
         End If
+        
     End If
     
     If Len(txtBinary) = 0 And isIde() Then
         txtBinary = App.path & "\..\..\_safe_test1.exe"
     End If
+    
+    START_TIME = Now
+    DebugLogFile = UserDeskTopFolder & "\debug" & LOGFILEEXT
+    If fso.FileExists(DebugLogFile) Then fso.DeleteFile DebugLogFile
+    fso.writeFile DebugLogFile, "-------[ SysAnalyzer v" & App.major & "." & App.minor & "." & App.Revision & "  " & START_TIME & " ]-------" & vbCrLf
 
-    LoadUsers
-    Me.Icon = frmMain.Icon
+    If isAutoRunMode Then cmdStart_Click
     
 Exit Sub
 hell:
         MsgBox Err.Description
+End Sub
+
+Sub validateDelay()
+    On Error Resume Next
+    If Len(txtDelay) = 0 Then txtDelay = 30
+    If Not IsNumeric(txtDelay) Then txtDelay = 30
+    txtDelay = CLng(txtDelay)
+    If Err.Number <> 0 Then txtDelay = 30
 End Sub
 
 Private Sub LoadUsers()
@@ -1178,6 +1230,10 @@ Sub cmdStart_Click()
         
     On Error Resume Next
     Dim errmsg As String
+    
+    validateDelay
+    If known.Loaded Then known.Disabled = Not (chkUseKnown.value = 1)
+    If chkStartBrowser.value = 1 Then LaunchGoatBrowser 'only one browser instance started..ok to call twice
     
     If chkRunAsUser.value = 1 Then
         If chkApiLog.value = 1 Then
@@ -1222,16 +1278,11 @@ Sub cmdStart_Click()
         chkApiLog.value = 0
         Exit Sub
     End If
-    
-    If Len(txtDelay) = 0 Or Not IsNumeric(txtDelay) Then
-        MsgBox "Invalid Delay Set defaulting to 30 seconds", vbInformation
-        txtDelay = 30
-    End If
-        
+            
     If chkNetworkAnalyzer.value = 1 Then
         If Not isNetworkAnalyzerRunning() Then
             If fso.FileExists(networkAnalyzer) Then
-                Shell """" & networkAnalyzer & """ /start /log """ & UserDeskTopFolder & """", vbMinimizedNoFocus
+                networkAnalyzerPID = Shell("""" & networkAnalyzer & """ /start /log """ & UserDeskTopFolder & """", vbMinimizedNoFocus)
             Else
                 MsgBox "Missing: " & networkAnalyzer
             End If
@@ -1242,7 +1293,7 @@ Sub cmdStart_Click()
     
     'must be last external process to launch as it monitors others...
     If fso.FileExists(procWatch) Then
-        procWatchPID = Shell(procWatch & " /log=" & UserDeskTopFolder & "\ProcWatch.log", vbMinimizedNoFocus)
+        procWatchPID = Shell(procWatch & " /log=" & UserDeskTopFolder & "\ProcWatch" & LOGFILEEXT, vbMinimizedNoFocus)
     End If
 
     'LaunchGoatBrowser
@@ -1302,11 +1353,11 @@ Private Function launchtcpdump()
     
     If fso.FileExists(tcpdump) Then
                 
-        f = UserDeskTopFolder() & "\capture.pcap"
+        f = UserDeskTopFolder() & "\capture." & LOGFILEEXT
         If fso.FileExists(f) Then
             While fso.FileExists(f)
                 i = i + 1
-                f = UserDeskTopFolder() & "\capture_" & i & ".pcap"
+                f = UserDeskTopFolder() & "\capture_" & i & "." & LOGFILEEXT
                 If i = 100 Then Exit Function 'wtf?
             Wend
         End If
@@ -1336,7 +1387,7 @@ Private Function launchtcpdump()
         
         Clipboard.Clear
         Clipboard.SetText args
-        Shell args, vbMinimizedNoFocus
+        tcpDumpPID = Shell(args, vbMinimizedNoFocus)
         Sleep 500
         
     Else

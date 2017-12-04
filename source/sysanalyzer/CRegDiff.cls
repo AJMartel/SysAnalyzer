@@ -36,6 +36,7 @@ Dim HKCU_keys() As String
 Dim HKLM_vals() As String
 Dim HKLM_keys() As String
 Dim HKLM_singleval() As String
+Dim HKCU_singleval() As String
 
 Public Snap1 As New Collection
 Public Snap2 As New Collection
@@ -48,7 +49,8 @@ Private Sub Class_Initialize()
      
      'enum keys
      push HKCU_keys, "\SOFTWARE\Microsoft\Active Setup\Installed Components"
-      
+     push HKCU_keys, "\Software\Classes" 'koveter
+     
      'enum values
      push HKLM_vals, "\Software\Microsoft\Windows\CurrentVersion\Runonce"
      push HKLM_vals, "\Software\Microsoft\Windows\CurrentVersion\Run"
@@ -61,6 +63,8 @@ Private Sub Class_Initialize()
      push HKLM_keys, "\SYSTEM\CurrentControlSet\Services"
      push HKLM_keys, "\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options"
      push HKLM_keys, "\SOFTWARE\Microsoft\Active Setup\Installed Components"
+     push HKLM_keys, "\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Custom"       'sdb shim database registration
+     push HKLM_keys, "\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\InstalledSDB" 'sdb shim database registration
      
      'Example of a key which may change (not added new) which we currently dont have code for...
     '[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon]
@@ -68,7 +72,9 @@ Private Sub Class_Initialize()
     'and  HKLM\Software\Microsoft\Windows NT\CurrentVersion\Windows\Load,AppInit_DLLs
     push HKLM_singleval, "\Software\Microsoft\Windows NT\CurrentVersion\Windows,AppInit_DLLs"
     push HKLM_singleval, "\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon,Userinit"
-    'Software\Microsoft\Windows NT\CurrentVersion\Winlogon\shell -- Nymaim
+    push HKLM_singleval, "Software\Microsoft\Windows NT\CurrentVersion\Winlogon,shell"      'Nymaim
+    
+    push HKCU_singleval, "Software\Microsoft\Windows NT\CurrentVersion\Winlogon,shell"      'Nymaim
     
 End Sub
 
@@ -115,6 +121,14 @@ Private Sub DoSnap(Optional isSnap1 As Boolean = True)
             End If
         Next
         
+        For i = 0 To UBound(HKCU_singleval)
+            tmp = Split(HKCU_singleval(i), ",")
+            k = Empty
+            k = reg.ReadValue(tmp(0), tmp(1))
+            k = "HKCU" & HKCU_singleval(i) & "--->" & k
+            c.Add k, k
+        Next
+        
         reg.hive = HKEY_LOCAL_MACHINE
         
         For i = 0 To UBound(HKLM_vals)
@@ -144,6 +158,7 @@ Private Sub DoSnap(Optional isSnap1 As Boolean = True)
             k = "HKLM" & HKLM_singleval(i) & "--->" & k
             c.Add k, k
         Next
+        
         
 End Sub
 

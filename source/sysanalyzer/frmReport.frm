@@ -49,7 +49,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
-Option Explicit
+'Option Explicit
 'License:   GPL
 'Copyright: 2005 iDefense a Verisign Company
 'Site:      http://labs.idefense.com
@@ -72,7 +72,7 @@ Option Explicit
 
 'Used in several projects do not change interface!
 
-Private Declare Sub SetWindowPos Lib "user32" (ByVal hwnd As Long, ByVal _
+Private Declare Sub SetWindowPos Lib "user32" (ByVal Hwnd As Long, ByVal _
     hWndInsertAfter As Long, ByVal x As Long, ByVal y As Long, ByVal cx _
     As Long, ByVal cy As Long, ByVal wFlags As Long)
     
@@ -86,8 +86,8 @@ Function ShowList(list, Optional modal As Boolean = False, Optional saveName As 
     filesaveName = saveName
     
     If topMost Then
-        SetWindowPos Me.hwnd, HWND_TOPMOST, Me.Left / 15, _
-            Me.top / 15, Me.Width / 15, _
+        SetWindowPos Me.Hwnd, HWND_TOPMOST, Me.Left / 15, _
+            Me.Top / 15, Me.Width / 15, _
             Me.Height / 15, 0
     End If
     
@@ -112,18 +112,20 @@ End Function
  
 
 Private Sub Command2_Click()
-    Dim Base As String
+    Dim base As String
     On Error Resume Next
     
+    If Len(LOGFILEEXT) = 0 Then LOGFILEEXT = ".txt"
+    
     If Len(filesaveName) = 0 Then
-        Base = fso.GetBaseName(frmMain.samplePath)
-        Base = UserDeskTopFolder & "\" & Base & "_" & Format(Now(), "h.nam/pm") & ".log"
+        base = fso.GetBaseName(frmMain.samplePath)
+        base = UserDeskTopFolder & "\" & base & "_" & Format(Now(), "h.nam/pm") & LOGFILEEXT
     Else
-        Base = UserDeskTopFolder & "\" & filesaveName
+        base = UserDeskTopFolder & "\" & filesaveName
     End If
     
-    fso.writeFile Base, Text1
-    If Err.Number = 0 Then MsgBox "Saved Successfully as:" & vbCrLf & vbCrLf & Base
+    fso.writeFile base, Text1
+    If Err.Number = 0 Then MsgBox "Saved Successfully as:" & vbCrLf & vbCrLf & base
     
 End Sub
 
@@ -142,7 +144,7 @@ End Sub
 
 Private Sub Form_Resize()
     On Error Resume Next
-    Text1.Height = Me.Height - Text1.top - 550
+    Text1.Height = Me.Height - Text1.Top - 550
     Text1.Width = Me.Width - Text1.Left - 200
 End Sub
 

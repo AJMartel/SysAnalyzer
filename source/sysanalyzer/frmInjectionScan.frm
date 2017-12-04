@@ -52,7 +52,7 @@ Begin VB.Form frmInjectionScan
          Height          =   345
          Left            =   7650
          TabIndex        =   4
-         Text            =   "50"
+         Text            =   "5.8"
          Top             =   30
          Width           =   465
       End
@@ -236,14 +236,15 @@ Sub FindStealthInjections(pid As Long, pName As String)
     Dim mm As matchModes
     Dim knownModules As Long
     Dim s As String
-    Dim entropy As Long
-    Dim minEntropy As Long
+    Dim entropy As Single
+    Dim minEntropy As Single
     Dim isInject As Boolean
     Dim dumpLen As Long
     
     On Error Resume Next
     Me.Visible = True
-    minEntropy = CLng(txtMinEntropy)
+    minEntropy = CSng(txtMinEntropy)
+    If minEntropy > 8 Then minEntropy = 8
     
     'If diff.CProc.x64.IsProcess_x64(pid) <> r_32bit Then
     '    MsgBox x64Error, vbInformation
@@ -251,8 +252,8 @@ Sub FindStealthInjections(pid As Long, pName As String)
     'End If
     
     If Err.Number <> 0 Then
-        minEntropy = 50
-        txtMinEntropy = 50
+        minEntropy = 5.8
+        txtMinEntropy = 5.8
         Err.Clear
     End If
     
@@ -282,8 +283,8 @@ Sub FindStealthInjections(pid As Long, pName As String)
             
             'If cMem.size < &H10000 Then 'some level of DoS protection against huge allocations (Dridex)...
                 dumpLen = IIf(cMem.size > &H4000, &H4000, cMem.size) 'do a spot check of entrophy, no need for full (non critical metric) now we dont exclude big ones..
-                s = pi.ReadMemory2(cMem.pid, cMem.Base, dumpLen) 'doesnt add that much time
-                entropy = CalculateEntropy(s)
+                s = pi.ReadMemory2(cMem.pid, cMem.Base, dumpLen)  'doesnt add that much time
+                entropy = strEntropy(s)
                 
                 If VBA.Left$(s, 2) = "MZ" Then
                     isInject = True
@@ -312,7 +313,7 @@ Sub FindStealthInjections(pid As Long, pName As String)
             End If
 
             Set li.Tag = cMem
-            li.subItems(6) = entropy
+            li.subItems(6) = pad(Round(entropy, 2))
         End If
         
 nextone:
@@ -334,6 +335,31 @@ End Sub
 Private Sub cmdRescan_Click()
     lv.ListItems.Clear
     StealthInjectionScan
+End Sub
+
+Private Sub Command1_Click()
+    Dim minEntropy As Single, tmp As Single
+    Dim li As ListItem
+    
+    On Error Resume Next
+    
+    minEntropy = CSng(Trim(txtMinEntropy))
+    
+    If Err.Number <> 0 Then
+        MsgBox "Could not convert " & txtMinEntropy & " to float"
+        Exit Sub
+    End If
+    
+    For i = lv.ListItems.count To 1 Step -1
+         Set li = lv.ListItems(i)
+         tmp = CSng(Trim(li.subItems(6)))
+         If Err.Number = 0 Then
+            If tmp < minEntropy Then lv.ListItems.Remove (i)
+         Else
+            Err.Clear
+         End If
+    Next
+    
 End Sub
 
 Private Sub Form_Load()

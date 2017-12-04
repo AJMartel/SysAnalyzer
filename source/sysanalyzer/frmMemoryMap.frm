@@ -40,7 +40,7 @@ Begin VB.Form frmMemoryMap
       Begin VB.Menu mnuViewMemory 
          Caption         =   "View"
       End
-      Begin VB.Menu mnuSaveMemory 
+      Begin VB.Menu mnuSaveAll 
          Caption         =   "Save"
       End
       Begin VB.Menu mnuStrings 
@@ -196,6 +196,7 @@ Private Sub Form_Load()
     mnuPopup.Visible = False
     mnuPopup2.Visible = False
     Me.Icon = frmMain.Icon
+    lv.MultiSelect = True
     lv.SetColumnHeaders "Base*,Size,Protect,Type,Module"
     lv2.SetColumnHeaders "Base,Size,Module*"
     lv2.Move lv.Left, lv.Top, lv.Width, lv.Height
@@ -256,6 +257,32 @@ Private Sub mnuDumpDll_Click()
     
 End Sub
 
+Private Sub mnuSaveAll_Click()
+    
+    If lv.SelCount = 0 Then Exit Sub
+    
+    Dim f As String, li, pth As String, r() As String
+    
+    On Error Resume Next
+    
+    f = dlg.FolderDialog(UserDeskTopFolder, Me.hwnd)
+    If Len(f) = 0 Then Exit Sub
+    
+    For Each li In lv.selItems
+        pth = f & "\" & Trim(li.Text) & ".mem"
+        If fso.FileExists(pth) Then fso.DeleteFile pth
+        
+        If pi.DumpMemory(active_pid, Trim(li.Text), Trim(li.subItems(1)), pth) Then
+            push r, "File successfully saved: " & fso.FileNameFromPath(pth)
+        Else
+            push r, "Error saving file: " & fso.FileNameFromPath(pth) & " Err: " & Err.Description
+        End If
+    Next
+    
+    MsgBox Join(r, vbCrLf)
+    
+End Sub
+
 Private Sub mnuSaveDll_Click()
     If selli Is Nothing Then Exit Sub
     Dim f As String
@@ -283,19 +310,19 @@ Private Sub mnuSaveDll_Click()
     
 End Sub
 
-Private Sub mnuSaveMemory_Click()
-    If selli Is Nothing Then Exit Sub
-    Dim f As String
-    On Error Resume Next
-    'f = InputBox("Save file as: ", , UserDeskTopFolder & "\" & selli.Text & ".mem")
-    f = frmDlg.SaveDialog(AllFiles, UserDeskTopFolder, "Save Memory as:", , Me, Trim(selli.Text) & ".mem")
-    If Len(f) = 0 Then Exit Sub
-    If pi.DumpMemory(active_pid, Trim(selli.Text), Trim(selli.subItems(1)), f) Then
-        MsgBox "File successfully saved"
-    Else
-        MsgBox "Error saving file: " & Err.Description
-    End If
-End Sub
+'Private Sub mnuSaveMemory_Click()
+'    If selli Is Nothing Then Exit Sub
+'    Dim f As String
+'    On Error Resume Next
+'    'f = InputBox("Save file as: ", , UserDeskTopFolder & "\" & selli.Text & ".mem")
+'    f = frmDlg.SaveDialog(AllFiles, UserDeskTopFolder, "Save Memory as:", , Me, Trim(selli.Text) & ".mem")
+'    If Len(f) = 0 Then Exit Sub
+'    If pi.DumpMemory(active_pid, Trim(selli.Text), Trim(selli.subItems(1)), f) Then
+'        MsgBox "File successfully saved"
+'    Else
+'        MsgBox "Error saving file: " & Err.Description
+'    End If
+'End Sub
 
 Private Sub mnuSaveSelected_Click()
 

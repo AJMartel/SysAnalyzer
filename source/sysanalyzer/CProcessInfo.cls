@@ -65,8 +65,8 @@ Private Declare Function NtQuerySystemInformation Lib "ntdll.dll" ( _
     dwReserved As Long) As Long
 
 Private Type SYSTEM_MODULE_INFORMATION
-    Reserved(1) As Long                'ULONG reserved[2];
-    base As Long                       'PVOID Base;
+    reserved(1) As Long                'ULONG reserved[2];
+    Base As Long                       'PVOID Base;
     size As Long                       'ULONG Size;
     flags As Long                      'ULONG Flags;
     index As Integer                   'USHORT Index;
@@ -197,7 +197,7 @@ Private Declare Function ProcessNext Lib "kernel32" Alias "Process32Next" (ByVal
 Private Declare Function CreateToolhelpSnapshot Lib "kernel32" Alias "CreateToolhelp32Snapshot" (ByVal lFlags As Long, lProcessID As Long) As Long
 Private Declare Function GetModuleFileName Lib "kernel32" Alias "GetModuleFileNameA" (ByVal hModule As Long, ByVal lpFileName As String, ByVal nSize As Long) As Long
 Private Declare Function CloseHandle Lib "kernel32" (ByVal hObject As Long) As Long
-Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long)
+Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal length As Long)
 Private Declare Function OpenProcess Lib "kernel32" (ByVal dwDesiredAccess As Long, ByVal bInheritHandle As Long, ByVal dwProcessId As Long) As Long
 Private Declare Function WriteProcessMemory Lib "kernel32" (ByVal hProcess As Long, ByVal lpBaseAddress As Any, ByVal lpBuffer As Any, ByVal nSize As Long, lpNumberOfBytesWritten As Long) As Long
 Private Declare Function ReadProcessMemory Lib "kernel32" (ByVal hProcess As Long, ByVal lpBaseAddress As Any, lpBuffer As Byte, ByVal nSize As Long, lpNumberOfBytesWritten As Long) As Long
@@ -284,7 +284,7 @@ End Type
 
 Private Declare Function WTSEnumerateProcesses _
    Lib "wtsapi32.dll" Alias "WTSEnumerateProcessesA" _
-   (ByVal hServer As Long, ByVal Reserved As Long, _
+   (ByVal hServer As Long, ByVal reserved As Long, _
    ByVal version As Long, ByRef ppProcessInfo As Long, _
    ByRef pCount As Long _
    ) As Long
@@ -411,9 +411,9 @@ Function GetRunningProcesses() As Collection 'of CProcess classes
                     .sessionID = udtProcessInfo.sessionID
                     .pid = udtProcessInfo.ProcessID
                     .path = GetStringFromLP(udtProcessInfo.pProcessName)
-                    .fullpath = GetProcessPath(.pid)
+                    .fullPath = GetProcessPath(.pid)
                     .ParentPID = GetParentProcessId(.pid)
-                    .CmdLine = GetProcessCmdLine(.pid, .fullpath)
+                    .cmdLine = GetProcessCmdLine(.pid, .fullPath)
                     GetUserName udtProcessInfo.pUserSid, proc
                     .is64Bit = (x64.IsProcess_x64(.pid) = r_64bit)
                     m_col.Add proc, "pid:" & .pid
@@ -452,10 +452,10 @@ Function Legacy_GetRunningProcesses() As Collection 'of CProcess classes
              If InStr(.path, Chr(0)) > 0 Then
                 .path = Mid(.path, 1, InStr(.path, Chr(0)) - 1)
              End If
-            .fullpath = GetProcessPath(myProcess.th32ProcessID)
+            .fullPath = GetProcessPath(myProcess.th32ProcessID)
             .pid = myProcess.th32ProcessID
             .ParentPID = myProcess.th32ParentProcessID
-            .CmdLine = GetProcessCmdLine(.pid, .fullpath)
+            .cmdLine = GetProcessCmdLine(.pid, .fullPath)
             .User = GetProcessUser(.pid)
             .is64Bit = (x64.IsProcess_x64(.pid) = r_64bit)
         End With
@@ -472,10 +472,10 @@ Function Legacy_GetRunningProcesses() As Collection 'of CProcess classes
                  If InStr(.path, Chr(0)) > 0 Then
                     .path = Mid(.path, 1, InStr(.path, Chr(0)) - 1)
                  End If
-                .fullpath = GetProcessPath(myProcess.th32ProcessID)
+                .fullPath = GetProcessPath(myProcess.th32ProcessID)
                 .pid = myProcess.th32ProcessID
                 .ParentPID = myProcess.th32ParentProcessID
-                .CmdLine = GetProcessCmdLine(.pid, .fullpath)
+                .cmdLine = GetProcessCmdLine(.pid, .fullPath)
                 .User = GetProcessUser(.pid) 'OpenProcessToken Fails for Local/Network Service
                 'If Len(.User) = 0 Then Stop
                 .is64Bit = (x64.IsProcess_x64(.pid) = r_64bit)
@@ -496,7 +496,7 @@ Function Legacy_GetRunningProcesses() As Collection 'of CProcess classes
 End Function
 
 'using static PEB address will fail for XP SP 2 and above...
-Function GetProcessCmdLine(pid As Long, Optional fullpath As String) As String
+Function GetProcessCmdLine(pid As Long, Optional fullPath As String) As String
 
     'Exit Function 'fix me sometime
     
@@ -540,7 +540,7 @@ Function GetProcessCmdLine(pid As Long, Optional fullpath As String) As String
       
     '3. get the CmdLine
    Dim wszCmdLine(500) As Byte
-   Dim CmdLine As String
+   Dim cmdLine As String
      
    If ReadProcessMemory(hProcess, Block.wszCmdLineAddress, wszCmdLine(0), UBound(wszCmdLine), dwSize) < 0 Then
             'MsgBox Err.LastDllError
@@ -552,13 +552,13 @@ Function GetProcessCmdLine(pid As Long, Optional fullpath As String) As String
     
    For i = 0 To UBound(wszCmdLine) - 1
         If wszCmdLine(i) = 0 And wszCmdLine(i + 1) = 0 Then Exit For
-        If wszCmdLine(i) <> 0 Then CmdLine = CmdLine & Chr(wszCmdLine(i))
+        If wszCmdLine(i) <> 0 Then cmdLine = cmdLine & Chr(wszCmdLine(i))
    Next
      
-   CmdLine = Replace(CmdLine, """" & fullpath & """", Empty, , , vbTextCompare)
-   CmdLine = Replace(CmdLine, fullpath, Empty, , , vbTextCompare)
+   cmdLine = Replace(cmdLine, """" & fullPath & """", Empty, , , vbTextCompare)
+   cmdLine = Replace(cmdLine, fullPath, Empty, , , vbTextCompare)
      
-   GetProcessCmdLine = Trim(CmdLine)
+   GetProcessCmdLine = Trim(cmdLine)
    
    CloseHandle hProcess
    
@@ -598,7 +598,7 @@ Function GetProcessModules(pid As Long) As Collection
          
         Set cmod = New CModule
         cmod.path = mfn
-        cmod.base = lmi.lpBaseOfDll
+        cmod.Base = lmi.lpBaseOfDll
         cmod.size = lmi.SizeOfImage
          
         On Error Resume Next
@@ -682,7 +682,7 @@ Function DumpProcess(pid As Long, fPath As String) As Boolean
     Set col = GetProcessModules(pid)
     Set cmod = col(1)
 
-    DumpProcess = DumpProcessMemory(pid, cmod.base, cmod.size, fPath)
+    DumpProcess = DumpProcessMemory(pid, cmod.Base, cmod.size, fPath)
     
 End Function
 
@@ -702,7 +702,7 @@ Function DumpMemory(pid As Long, ByVal hex_start As String, hex_size As String, 
 End Function
 
 '7.26.16: now large allocs are dumped in chunks...
-Function DumpProcessMemory(pid As Long, start As Long, Length As Long, fPath As String) As Boolean
+Function DumpProcessMemory(pid As Long, start As Long, length As Long, fPath As String) As Boolean
 
     Dim pHandle As Long
     Dim b() As Byte
@@ -711,7 +711,7 @@ Function DumpProcessMemory(pid As Long, start As Long, Length As Long, fPath As 
     
     Dim maxSz As Long, cnt As Long, m As Long, bufsz As Long, curBase As Long, readLen As Long
     
-    bufsz = Length
+    bufsz = length
     curBase = start
     
     maxSz = 1000000 '10mb
@@ -777,7 +777,7 @@ hell:
 End Function
 
 'for x64 processes assumes start is hex string, length can be hexstring or long..
-Function ReadMemory2(pid As Long, ByVal start As Variant, ByVal Length As Variant) As String
+Function ReadMemory2(pid As Long, ByVal start As Variant, ByVal length As Variant) As String
    
     Dim pHandle As Long
     Dim b() As Byte
@@ -785,29 +785,29 @@ Function ReadMemory2(pid As Long, ByVal start As Variant, ByVal Length As Varian
     Dim f As Long
     
     If x64.IsProcess_x64(pid) = r_64bit Then
-        If TypeName(Length) = "Long" Then Length = Hex(Length)
+        If TypeName(length) = "Long" Then length = Hex(length)
         If TypeName(start) = "Long" Then start = Hex(start)
         start = Replace(start, "`", Empty)
         tmp = fso.GetFreeFileName(Environ("temp"), ".bin")
-        If DumpMemory(pid, CStr(start), CStr(Length), tmp) Then
+        If DumpMemory(pid, CStr(start), CStr(length), tmp) Then
              ReadMemory2 = fso.ReadFile(tmp)
              Kill tmp
              Exit Function
         End If
     Else
-        If TypeName(Length) = "String" Or TypeName(Length) = "Variant" Then Length = CLng("&h" & Length)
+        If TypeName(length) = "String" Or TypeName(length) = "Variant" Then length = CLng("&h" & length)
         If TypeName(start) = "String" Or TypeName(start) = "Variant" Then start = CLng("&h" & start)
 
-        ReDim b(Length + 1)
+        ReDim b(length + 1)
         pHandle = OpenProcess(PROCESS_VM_READ, False, pid)
-        ReadProcessMemory pHandle, CLng(start), b(0), CLng(Length), CLng(Length)
+        ReadProcessMemory pHandle, CLng(start), b(0), CLng(length), CLng(length)
         CloseHandle pHandle
         ReadMemory2 = StrConv(b(), vbUnicode, &H409)
     End If
     
 End Function
 
-Function ReadMemory(pid As Long, start As Long, Length As Long) As String
+Function ReadMemory(pid As Long, start As Long, length As Long) As String
    
     Dim pHandle As Long
     Dim b() As Byte
@@ -815,10 +815,10 @@ Function ReadMemory(pid As Long, start As Long, Length As Long) As String
    
     f = FreeFile
     
-    ReDim b(Length + 1)
+    ReDim b(length + 1)
         
     pHandle = OpenProcess(PROCESS_VM_READ, False, pid)
-    ReadProcessMemory pHandle, start, b(0), Length, Length
+    ReadProcessMemory pHandle, start, b(0), length, length
     CloseHandle pHandle
     
     ReadMemory = StrConv(b(), vbUnicode, &H409)
@@ -923,6 +923,33 @@ Function TerminateProces(pid As Long) As Boolean
     CloseHandle pHandle
 End Function
 
+Function KillProcess(ByVal name As String, Optional all As Boolean = True) As Long
+    Dim c As Collection
+    Dim p As CProcess
+    Dim i As Long
+    Dim fullPath As Boolean
+    
+    fullPath = InStr(name, "\") > 0
+    Set c = GetRunningProcesses()
+    
+    For Each p In c
+        If fullPath Then
+            If LCase(p.fullPath) = LCase(name) Then
+                If TerminateProces(p.pid) Then i = i + 1
+                If Not all Then Exit For
+            End If
+        Else
+            If LCase(p.path) = LCase(name) Then
+                If TerminateProces(p.pid) Then i = i + 1
+                If Not all Then Exit For
+            End If
+        End If
+    Next
+    
+    KillProcess = i
+    
+End Function
+
 Function GetSeDebug() As Boolean
     Dim hToken As Long, hProcess As Long, lRet As Long
     Dim tkp As TOKEN_PRIVILEGES
@@ -991,7 +1018,7 @@ Function GetMemoryMap(pid As Long) As Collection 'of CMem
             Set cMem = New CMemory
             cMem.pid = pid
             cMem.size = meminfo.RegionSize
-            cMem.base = cur
+            cMem.Base = cur
             cMem.AllocBase = meminfo.AllocationBase
             cMem.InitialProtection = meminfo.InitialProtect
             cMem.MemType = meminfo.Type
@@ -1105,9 +1132,9 @@ Function GetProcess(pid As Long, cp As CProcess) As Boolean
                         .sessionID = udtProcessInfo.sessionID
                         .pid = udtProcessInfo.ProcessID
                         .path = GetStringFromLP(udtProcessInfo.pProcessName)
-                        .fullpath = GetProcessPath(.pid)
+                        .fullPath = GetProcessPath(.pid)
                         .ParentPID = GetParentProcessId(.pid)
-                        .CmdLine = GetProcessCmdLine(.pid, .fullpath)
+                        .cmdLine = GetProcessCmdLine(.pid, .fullPath)
                         GetUserName udtProcessInfo.pUserSid, proc
                         .is64Bit = (x64.IsProcess_x64(.pid) = r_64bit)
                     End With
@@ -1344,7 +1371,7 @@ Public Function StartProcessWithDLL(exePath As String, dllPath As String, Option
     End If
     
     Set cp = New CProcess
-    cp.fullpath = exePath
+    cp.fullPath = exePath
     cp.path = exePath
     
     If x64.WillRunAsx64Process(exePath) Then
@@ -1816,7 +1843,7 @@ End Function
 '
 'End Function
 
-Public Function InjectData(pid As Long, data As String, Optional base As Long = 0, Optional injLog As String, Optional cp As CProcess) As Boolean
+Public Function InjectData(pid As Long, data As String, Optional Base As Long = 0, Optional injLog As String, Optional cp As CProcess) As Boolean
 
     Dim hProcess As Long
     Dim lpfnLoadLib As Long
@@ -1855,7 +1882,7 @@ Public Function InjectData(pid As Long, data As String, Optional base As Long = 
     injLog = injLog & "Opening PID: " & pid & " Process Handle=" & hProcess & vbCrLf
     If hProcess = -1 Then GoTo hell
      
-    lpdllPath = VirtualAllocEx(hProcess, ByVal base, bufLen, MEM_COMMIT, ByVal PAGE_EXECUTE_READWRITE)
+    lpdllPath = VirtualAllocEx(hProcess, ByVal Base, bufLen, MEM_COMMIT, ByVal PAGE_EXECUTE_READWRITE)
     injLog = injLog & "Remote Allocation base: " & Hex(lpdllPath) & vbCrLf
     If lpdllPath = 0 Then GoTo hell
     

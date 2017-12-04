@@ -317,7 +317,7 @@ nextone:
     push extracts, String(50, "-")
     push extracts, rawStrings
     
-    pth2 = pFolder & "\" & baseFileName & "_strings.log"
+    pth2 = pFolder & "\" & baseFileName & "_strings" & LOGFILEEXT
     fso.writeFile pth2, Join(extracts, vbCrLf)
     
 End Sub
@@ -348,7 +348,7 @@ Private Sub ScanForRWE(pid As Long, Optional prefix As String = "") 'not x64 com
     pb2.max = c.count
     
     Dim s As String
-    Dim entropy As Integer
+    Dim entropy As Single
     
     abort = False
     cmdAbort.Visible = True
@@ -379,8 +379,8 @@ Private Sub ScanForRWE(pid As Long, Optional prefix As String = "") 'not x64 com
             Else
                 If cMem.size < &H10000 Then
                     s = proc.ReadMemory(cMem.pid, cMem.Base, cMem.size) 'doesnt add that much time (if small)
-                    entropy = CalculateEntropy(s) 'helps eliminate noise
-                    If entropy > 40 Then
+                    entropy = strEntropy(s) 'helps eliminate noise
+                    If entropy > 5.8 Then
                         AddLine pHex(cMem.Base) & " is RWE but not part of an image..possible injection entropy: " & entropy & "%  size:" & Hex(cMem.size)
                         dmpPath = DumpMemorySection(pid, cMem, "raw_" & prefix)
                         If fso.FileExists(dmpPath) Then AddLine "Memory dump saved as " & dmpPath

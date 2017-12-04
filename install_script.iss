@@ -17,6 +17,8 @@ Source: ./dependancy\MSWINSCK.OCX; DestDir: {sys}; Flags: uninsneveruninstall re
 Source: ./dependancy\hexed.ocx; DestDir: {sys}; Flags: uninsneveruninstall regserver
 Source: ./dependancy\libVT.dll; DestDir: {sys}; Flags: uninsneveruninstall regserver
 Source: ./dependancy\zlib.dll; DestDir: {app}
+Source: ./dependancy\MSINET.OCX; DestDir: {sys}; Flags: uninsneveruninstall regserver promptifolder
+
 ;
 Source: virustotal.exe; DestDir: {app}; Flags: ignoreversion
 Source: api_log.dll; DestDir: {app}; Flags: ignoreversion

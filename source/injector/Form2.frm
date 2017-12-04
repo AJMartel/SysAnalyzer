@@ -645,7 +645,7 @@ End Function
 Private Sub cmdBrowse_Click(index As Integer)
     Dim f As String
     
-    f = dlg.OpenDialog(AllFiles, , "Open Executable to monitor", Me.hwnd)
+    f = dlg.OpenDialog(AllFiles, , "Open Executable to monitor", Me.Hwnd)
     f = Replace(f, Chr(0), Empty)
     If Len(f) = 0 Then Exit Sub
     
@@ -742,7 +742,7 @@ Private Sub cmdSave_Click()
     Dim i As Long, t, f As String
     Dim li As ListItem
     
-    f = dlg.SaveDialog(textFiles, , , , Me.hwnd)
+    f = dlg.SaveDialog(textFiles, , , , Me.Hwnd)
     If Len(f) = 0 Then Exit Sub
     
     For Each li In lv.ListItems
@@ -959,7 +959,12 @@ Private Sub Form_Load()
     
     Set sc = New CSubclass2
     
-    sc.AttachMessage Me.hwnd, WM_COPYDATA
+    sc.AttachMessage Me.Hwnd, WM_COPYDATA
+    
+    If IsVistaPlus() Then
+    '     sc.AttachMessage Me.Hwnd, WM_DROPFILES
+          AllowCopyDataAcrossUIPI
+    End If
     
     Dim defaultdll, defaultexe
     
@@ -1109,7 +1114,7 @@ Private Sub mnuUpdateConfig_Click()
     End If
 End Sub
 
-Private Sub sc_MessageReceived(hwnd As Long, wMsg As Long, wParam As Long, lParam As Long, Cancel As Boolean) '
+Private Sub sc_MessageReceived(Hwnd As Long, wMsg As Long, wParam As Long, lParam As Long, Cancel As Boolean) '
     If wMsg = WM_COPYDATA Then RecieveTextMessage lParam
 End Sub
 
